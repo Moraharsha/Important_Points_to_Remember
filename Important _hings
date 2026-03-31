@@ -1,4 +1,120 @@
 Regarding Streams:
+
+know the difference btw 
+.map() → before collect
+toMap() → creates map
+mapping() → used inside groupingBy
+---------------------------------------------------------------------------
+🔥 Core Difference (Simple View)
+Concept	Works On	Purpose
+---------------------------------------------------------------------------
+.map()	Stream elements	Transform each element
+Collectors.toMap()	Stream → Map	Build a Map
+Collectors.mapping()	Inside collectors	Transform values during grouping
+---------------------------------------------------------------------------
+🔷 1. .map() → Transformation (Stream Level)
+
+👉 Works on each element in the stream
+
+Example:
+List<String> list = Arrays.asList("a", "bb", "ccc");
+
+List<Integer> lengths = list.stream()
+        .map(s -> s.length())
+        .collect(Collectors.toList());
+
+✔ Converts String → Integer
+
+👉 Output:
+[1, 2, 3]
+💡 Key Point
+Used before collect
+Changes stream data type
+---------------------------------------------------------------------------
+🔷 2. Collectors.toMap() → Build Map
+
+👉 Converts stream into a Map<K, V>
+
+Example:
+List<String> list = Arrays.asList("a", "bb", "ccc");
+
+Map<String, Integer> map = list.stream()
+        .collect(Collectors.toMap(
+                s -> s,          // key
+                s -> s.length()  // value
+        ));
+
+👉 Output:
+
+{a=1, bb=2, ccc=3}
+⚠️ Important
+---------------------------------------------------------------------------
+Handles duplicates using merge function:
+
+Collectors.toMap(
+    keyMapper,
+    valueMapper,
+    (oldVal, newVal) -> oldVal
+)
+💡 Key Point
+Terminal operation (collect)
+---------------------------------------------------------------------------
+Creates Map
+🔷 3. Collectors.mapping() → Transform INSIDE grouping
+
+👉 Used only inside another collector (like groupingBy)
+
+Example:
+Map<Integer, List<String>> result =
+    list.stream()
+        .collect(Collectors.groupingBy(
+            String::length,
+            Collectors.mapping(
+                s -> s.toUpperCase(),
+                Collectors.toList()
+            )
+        ));
+
+👉 Output:
+
+{1=[A], 2=[BB], 3=[CCC]}
+---------------------------------------------------------------------------
+💡 What’s happening?
+First groups by length
+Then modifies values (uppercase)
+❌ Your Statement (Fixing)
+
+Collectors.mapping() modifies only the values inside grouping, not keys and not the original map
+
+🔥 Real Comparison Example
+Without mapping()
+Map<Integer, List<String>> map =
+    list.stream()
+        .collect(Collectors.groupingBy(String::length));
+With mapping()
+Map<Integer, List<Integer>> map =
+    list.stream()
+        .collect(Collectors.groupingBy(
+            String::length,
+            Collectors.mapping(
+                s -> s.length(),
+                Collectors.toList()
+            )
+        ));
+🎯 Interview One-Liner Answers
+.map() → transforms elements in stream
+toMap() → converts stream into map
+mapping() → transforms values inside grouping collector
+---------------------------------------------------------------------------
+ //Type-5 -> Print employee ids having same name
+        Map<String, List<Integer>> mm =list.stream()
+                .collect(Collectors.groupingBy(employee::getName,
+                        Collectors.mapping(employee::getId, Collectors.toList())));
+            // here mapping() is very important observe this
+//        groupingBy(Employee::getId) → groups employees by id
+//
+//        mapping(Employee::getName, toList()) → extracts only names into list
+        System.out.println(mm);
 -------------------------------------------------------------------------
  //(1)-> why Comparator<T> bcz to sort own custom type based on our own object instance
         // (2)-> Comparator is functional Interface , but Comparable is not, even it as only one abstract interface
@@ -41,6 +157,17 @@ FOR Arrays type Comparator
 
         Arrays.sort(ar,c);
         System.out.println(Arrays.toString(ar));
+
+--------------------------------------------------------------------------------------------------
+ //Type-5 -> Print employee ids having same name  //
+        Map<String, List<Integer>> mm =list.stream()
+                .collect(Collectors.groupingBy(employee::getName,
+                        Collectors.mapping(employee::getId, Collectors.toList())));
+            // here mapping() is very important observe this
+//        groupingBy(Employee::getId) → groups employees by id
+//
+//        mapping(Employee::getName, toList()) → extracts only names into list
+        System.out.println(mm);
 ===================================================================================================
 
 given input as a HashMap then below things using Streams manipulations
@@ -178,7 +305,156 @@ Output:
 {10=[A, E], 20=[B, D], 30=[C]}
 
 ✔ Already solved in #9
--------------------------------------------------------------------------
+===================================================================================================================
+=========================================================================================================================---
+Regarding Collections to Remember
 
+Map<Integer, String> students = new TreeMap<>();// keys are sorted by default // remember  
+ students.put(101, "Yadagiri");
+        students.put(103, "Uma");
+        students.put(102, "Mounika");
+        BiConsumer<Integer, String> bicon = new BiConsumer<Integer, String>() {
+            public void accept (Integer key, String value) {
+                System.out.println(key+" >>> "+ value);
+            }
+        };
+        /*BiPredicate<employee,employee> bip=new BiPredicate<employee, employee>() {  /// filter() uses
+            @Override
+            public boolean test(employee employee, employee employee2) {
+                return false;
+            }
+        };
+        BiFunction<employee,employee,String> bin=new BiFunction<employee, employee, String>() {    // map() uses mostly
+            @Override
+            public String apply(employee employee, employee employee2) {
+                return "";
+            }
+        }; */
+
+        // TreeMap are automatically sorted based on keys
+        students.forEach(bicon);
+
+----------------------------------------------------------------------------------------------------------------
+
+
+1. max() and min()
+✅ Method Signature
+Optional<T> max(Comparator<? super T> comparator)
+Optional<T> min(Comparator<? super T> comparator)
+🔹 Parameters
+
+👉 Both require a Comparator
+
+Example:
+
+Comparator<Integer> comp = (a, b) -> a - b;
+-----------------------------------------------------------------------------------------
+Or shortcut:
+
+Comparator.naturalOrder()
+Comparator.reverseOrder()
+🔹 Return Type
+-----------------------------------------------------------------------------------------
+👉 Optional<T>
+
+Why Optional?
+
+Stream may be empty
+Avoids NullPointerException
+-----------------------------------------------------------------------------------------
+🔹 Example
+List<Integer> list = Arrays.asList(10, 20, 5, 30);
+
+Optional<Integer> max = list.stream()
+        .max(Integer::compareTo);
+
+Optional<Integer> min = list.stream()
+        .min(Integer::compareTo);
+
+System.out.println(max.get()); // 30
+System.out.println(min.get()); // 5
+🔥 Important Interview Point
+max.get(); // ❌ Risky if empty
+
+Safer:
+-----------------------------------------------------------------------------------------
+max.orElse(0);
+🔷 For Objects
+class Employee {
+    String name;
+    int salary;
+}
+-----------------------------------------------------------------------------------------
+Employee maxEmp = list.stream()
+        .max(Comparator.comparing(Employee::getSalary))
+        .orElse(null);
+🔷 2. average()
+✅ Method Signature
+OptionalDouble average()
+🔹 Where available?
+-----------------------------------------------------------------------------------------
+👉 Only on primitive streams
+
+IntStream
+LongStream
+DoubleStream
+🔹 Parameters
+
+👉 ❌ No parameters
+
+🔹 Return Type
+👉 OptionalDouble
+-----------------------------------------------------------------------------------------
+🔹 Example
+int[] arr = {10, 20, 30};
+
+OptionalDouble avg = Arrays.stream(arr)
+        .average();
+
+System.out.println(avg.getAsDouble()); // 20.0
+🔥 Important
+-----------------------------------------------------------------------------------------
+You cannot do this directly:
+
+List<Integer> list = Arrays.asList(10, 20, 30);
+-----------------------------------------------------------------------------------------
+// ❌ ERROR
+list.stream().average();
+-----------------------------------------------------------------------------------------
+✅ Correct Way
+double avg = list.stream()
+        .mapToInt(Integer::intValue)
+        .average()
+        .orElse(0);
+-----------------------------------------------------------------------------------------
+🔷 Summary Table
+Method	      Parameter         	Return Type	Works On
+-----------------------------------------------------------------------------------------
+max()       	Comparator     	Optional<T>	Object streams
+min()	       Comparator 	     Optional<T>	Object streams
+average()	      None	         OptionalDouble	Primitive streams
+-----------------------------------------------------------------------------------------
+🔥 Shortcut Examples
+✔ Max
+list.stream().max(Integer::compareTo);
+✔ Min
+list.stream().min(Integer::compareTo);
+✔ Average
+list.stream().mapToInt(i -> i).average();
+-----------------------------------------------------------------------------------------
+🚀 Key Interview Traps
+❌ Trap 1
+list.stream().average(); // WRONG
+❌ Trap 2
+max(); // without comparator → ERROR
+❌ Trap 3
+
+Forgetting Optional handling
+-----------------------------------------------------------------------------------------
+🎯 One-Line Memory Trick
+max/min → need Comparator
+average → need primitive stream
+All return Optional
+-----------------------------------------------------------------------------------------
 
 
