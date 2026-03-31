@@ -1,0 +1,184 @@
+Regarding Streams:
+-------------------------------------------------------------------------
+ //(1)-> why Comparator<T> bcz to sort own custom type based on our own object instance
+        // (2)-> Comparator is functional Interface , but Comparable is not, even it as only one abstract interface
+        //(3) Comparable uses compareTo(1arg) method, Comparator uses Compare() method takes 2 Args
+===================================================================================================
+--> Comparator: for Student class type
+  Comparator<student> cn=new Comparator<student>() {
+            @Override
+            public int compare(student o1, student o2) {
+                return o1.name.compareTo(o2.name);    // for Strings only this type
+                     return Integer.compare(o1.roll,o2.roll);    // other datatypes like this 
+            }
+        };
+        Collections.sort(clist,cn.reversed());   // need to pass the cn to here to get updated comparator sorting . other
+--> above cn is a comparator , for Comparator interface there is overridden reversed() method 
+
+1)Collections.sort(clist,crn);
+2)Comparator<student> crm=Comparator.comparing(i-> i.marks);
+3)Comparator<student> crmm=Comparator.comparing(i-> i.marks,Comparator.nullsFirst(Comparator.naturalOrder()));
+4)  // now usage of thenComparing() method used for chaining of sorting if some values are equal
+        Collections.sort(clist,crmm.thenComparing(cn));
+        System.out.println(clist);
+
+===================================================================================================
+
+FOR Arrays type Comparator
+ Integer[] ar = {6, 3, 5, 8, 9};
+        Comparator<Integer> c=new Comparator<Integer>() {
+            @Override
+            public int compare(Integer o1, Integer o2) {
+              //  return Integer.compare(o1,o2);// natural order
+               // return o1-o2;  // natural order
+                return (o1 < o2)? -1 : ((o1==o2)? 0 : 1); // natural order
+            }
+        };
+        // same below using lambda expressions
+      //  Comparator<Integer> c1= (Integer i, Integer j) ->  i-j;
+        //Comparator<Integer> t=(Integer i,Integer j)-> Integer.compare(i,j);
+        Comparator<Integer> cc=Comparator.comparingInt((Integer i) -> i);
+
+        Arrays.sort(ar,c);
+        System.out.println(Arrays.toString(ar));
+===================================================================================================
+
+given input as a HashMap then below things using Streams manipulations
+Sample Input (Given HashMap)
+Map<String, Integer> map = new HashMap<>();
+map.put("A", 10);
+map.put("B", 20);
+map.put("C", 30);
+map.put("D", 20);
+map.put("E", 10);
+-------------------------------------------------------------------------
+
+🔥 1. Filter Map (values > 15)
+Map<String, Integer> result = map.entrySet()
+        .stream()
+        .filter(e -> e.getValue() > 15)
+        .collect(Collectors.toMap(
+                Map.Entry::getKey,
+                Map.Entry::getValue
+        ));
+-------------------------------------------------------------------------
+🔥 2. Sort Map by Value
+Map<String, Integer> sorted = map.entrySet()
+        .stream()
+        .sorted(Map.Entry.comparingByValue())
+        .collect(Collectors.toMap(
+                Map.Entry::getKey,
+                Map.Entry::getValue,
+                (a, b) -> a,
+                LinkedHashMap::new
+        ));
+
+👉 LinkedHashMap keeps order
+-------------------------------------------------------------------------
+🔥 3. Sort by Key
+Map<String, Integer> sorted = map.entrySet()
+        .stream()
+        .sorted(Map.Entry.comparingByKey())
+        .collect(Collectors.toMap(
+                Map.Entry::getKey,
+                Map.Entry::getValue,
+                (a, b) -> a,
+                LinkedHashMap::new
+        ));
+-------------------------------------------------------------------------
+🔥 4. Find Max Value Entry
+Map.Entry<String, Integer> max = map.entrySet()
+        .stream()
+        .max(Map.Entry.comparingByValue())
+        .get();
+-------------------------------------------------------------------------
+🔥 5. Find Min Value Entry
+Map.Entry<String, Integer> min = map.entrySet()
+        .stream()
+        .min(Map.Entry.comparingByValue())
+        .get();
+-------------------------------------------------------------------------
+🔥 6. Convert Map → List of Keys
+List<String> keys = map.keySet()
+        .stream()
+        .collect(Collectors.toList());
+-------------------------------------------------------------------------
+🔥 7. Convert Map → List of Values
+List<Integer> values = map.values()
+        .stream()
+        .collect(Collectors.toList());
+-------------------------------------------------------------------------
+🔥 8. Transform Values (multiply by 2)
+Map<String, Integer> updated = map.entrySet()
+        .stream()
+        .collect(Collectors.toMap(
+                Map.Entry::getKey,
+                e -> e.getValue() * 2
+        ));
+-------------------------------------------------------------------------
+🔥 9. Reverse Map (Value → Keys)
+Map<Integer, List<String>> reversed = map.entrySet()
+        .stream()
+        .collect(Collectors.groupingBy(
+                Map.Entry::getValue,
+                Collectors.mapping(Map.Entry::getKey, Collectors.toList())
+        ));
+
+👉 Very important interview question above one
+-------------------------------------------------------------------------
+🔥 10. Remove Duplicates by Value (keep first)
+Map<String, Integer> unique = map.entrySet()
+        .stream()
+        .collect(Collectors.toMap(
+                Map.Entry::getKey,
+                Map.Entry::getValue,
+                (oldVal, newVal) -> oldVal
+        ));
+-------------------------------------------------------------------------
+🔥 11. Count Frequency of Values
+Map<Integer, Long> freq = map.values()
+        .stream()
+        .collect(Collectors.groupingBy(
+                v -> v,
+                Collectors.counting()
+        ));
+-------------------------------------------------------------------------
+🔥 12. Get Keys where value = 20
+List<String> keys = map.entrySet()
+        .stream()
+        .filter(e -> e.getValue() == 20)
+        .map(Map.Entry::getKey)
+        .collect(Collectors.toList());
+-------------------------------------------------------------------------
+🔥 13. Sum of Values
+int sum = map.values()
+        .stream()
+        .mapToInt(Integer::intValue)
+        .sum();
+-------------------------------------------------------------------------
+🔥 14. Check if any value > 25
+boolean exists = map.values()
+        .stream()
+        .anyMatch(v -> v > 25);
+-------------------------------------------------------------------------
+🎯 Interview Insight
+
+👉 Most important patterns:
+
+entrySet().stream() ⭐
+groupingBy() ⭐⭐⭐
+mapping() ⭐⭐⭐
+toMap() with merge ⭐⭐⭐
+🚀 One Real Interview Question
+-------------------------------------------------------------------------
+👉 “Group keys based on same values”
+
+Output:
+
+{10=[A, E], 20=[B, D], 30=[C]}
+
+✔ Already solved in #9
+-------------------------------------------------------------------------
+
+
+
