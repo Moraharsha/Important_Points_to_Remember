@@ -457,4 +457,16 @@ average → need primitive stream
 All return Optional
 -----------------------------------------------------------------------------------------
 
-
+Spring
+-> learn what is IOC container
+->what is Dependency Injection
+-> what is Setter/Constructor Injection
+-> what is Application Context, What is BeanFactory and there subclasses
+-> what is Resource ? why it is used inside BeanFactory as argument why not in Application Context
+-> what is ConfigMetaData.xml what we write in that?
+-> what is Bean ?
+-> Three ways to inject into bean(using java code, using annotations, using xml )
+-> what is @Autowired, @Component, @Id, @Table, @Column ,@Entity
+->   why these two (i)     <context:annotation-config/>
+                   (ii)    <context:component-scan base-package="com.spring.normaljdbc"/> 
+-> why context.getBean() returns Object type and so we need to type cast to own type .
